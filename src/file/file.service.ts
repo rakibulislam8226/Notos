@@ -3,19 +3,13 @@ import * as fs from 'fs';
 
 @Injectable()
 export class FileService {
-  writeFile() {
-    fs.writeFileSync('output.txt', 'Hello Rakib from NestJS');
+    async readMyFile() {
+        const data = await fs.promises.readFile("data.txt", "utf8");
+        return { content: data };
+    }
 
-    return {
-      success: true,
-    };
-  }
-
-  readFile() {
-    const data = fs.readFileSync('data.txt', 'utf8');
-
-    return {
-      content: data,
-    };
-  }
+    async writeMyFile(content: string) {
+        await fs.promises.writeFile("output.txt", content, "utf8");
+        return { message: "File written successfully." };
+    }
 }

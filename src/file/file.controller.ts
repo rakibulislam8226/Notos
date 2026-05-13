@@ -1,5 +1,6 @@
-import { Controller, Get } from '@nestjs/common';
+import { Controller, Get, Post, Body } from '@nestjs/common';
 import { FileService } from './file.service';
+import { WriteFileDto } from './dto/write-file.dto';
 
 @Controller('file')
 export class FileController {
@@ -8,10 +9,11 @@ export class FileController {
 
     @Get('read')
     readFile() {
-        return this.fileService.readFile();
+        return this.fileService.readMyFile();
     }
-    @Get('write')
-    writeFile() {
-        return this.fileService.writeFile();
+
+    @Post('write')
+    writeFile(@Body() body: WriteFileDto) {
+        return this.fileService.writeMyFile(body.content);
     }
 }
