@@ -12,4 +12,10 @@ export class FileService {
         await fs.promises.writeFile("output.txt", content, "utf8");
         return { message: "File written successfully." };
     }
+
+    async getUsers() {
+        const data = await fetch("https://jsonplaceholder.typicode.com/users/1");
+        const users = await data.json();
+        return users;
+    }
 }

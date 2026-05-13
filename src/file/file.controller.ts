@@ -16,4 +16,8 @@ export class FileController {
     writeFile(@Body() body: WriteFileDto) {
         return this.fileService.writeMyFile(body.content);
     }
+    @Get('users')
+    getUsers() {
+        return this.fileService.getUsers();
+    }
 }
