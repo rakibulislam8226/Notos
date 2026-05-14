@@ -12,3 +12,12 @@ model Todo {
   completed Boolean  @default(false)
   createdAt DateTime @default(now())
 }
+
+model User {
+  id        Int      @id @default(autoincrement())
+  email     String   @unique
+  password  String
+  first_name String
+  last_name  String
+  createdAt DateTime @default(now())
+}
