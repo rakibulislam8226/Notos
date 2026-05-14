@@ -1,42 +1,141 @@
-<p align="center">
-  <a href="http://nestjs.com/" target="blank"><img src="https://nestjs.com/img/logo-small.svg" width="120" alt="Nest Logo" /></a>
-</p>
+# Totos — NestJS REST API
 
-  <!--[![Backers on Open Collective](https://opencollective.com/nest/backers/badge.svg)](https://opencollective.com/nest#backer)
-  [![Sponsors on Open Collective](https://opencollective.com/nest/sponsors/badge.svg)](https://opencollective.com/nest#sponsor)-->
+A NestJS REST API with JWT authentication, Prisma ORM (PostgreSQL), and file upload support.
 
-## Description
+---
 
-[Nest](https://github.com/nestjs/nest) framework TypeScript starter repository.
-
-## Project setup
+## Setup
 
 ```bash
-$ npm install
+npm install
 ```
 
-## Compile and run the project
+Copy `.env.example` to `.env` and fill in the values:
 
-```bash
-# development
-$ npm run start
-
-# watch mode
-$ npm run start:dev
-
-# production mode
-$ npm run start:prod
+```env
+DATABASE_URL="postgresql://user:password@localhost:5432/nest_course"
+JWT_SECRET="your_jwt_secret"
+JWT_REFRESH_SECRET="your_jwt_refresh_secret"
 ```
 
-## Run tests
+---
+
+## Running the server
 
 ```bash
-# unit tests
-$ npm run test
+# Development (watch mode)
+npm run start:dev
 
-# e2e tests
-$ npm run test:e2e
+# Production
+npm run start:prod
+```
 
-# test coverage
-$ npm run test:cov
+API is available at `http://localhost:3000`
+Swagger docs at `http://localhost:3000/api`
+
+---
+
+## Prisma (like Django's ORM commands)
+
+| Django | NestJS / Prisma | Description |
+|---|---|---|
+| `makemigrations` | `npx prisma migrate dev --name <name>` | Create and apply a new migration |
+| `migrate` | `npx prisma generate` | Regenerate the Prisma client after schema changes |
+| `dbshell` | `npx prisma studio` | Open a visual DB browser at `localhost:5555` |
+
+```bash
+# Create a migration (after editing prisma/schema.prisma)
+npx prisma migrate dev --name add_user_table
+
+# Regenerate Prisma client (run after every schema change)
+npx prisma generate
+
+# Open visual database browser
+npx prisma studio
+
+# Reset the database (drops all data — dev only!)
+npx prisma migrate reset
+
+# Check migration status
+npx prisma migrate status
+
+# Push schema changes without creating a migration file (prototyping only)
+npx prisma db push
+```
+
+---
+
+## NestJS code generation (like Django's startapp)
+
+```bash
+# Generate a full resource: module + controller + service + DTOs + spec files
+nest g resource <name>
+
+# Generate individual pieces
+nest g module <name>
+nest g controller <name>
+nest g service <name>
+
+# Generate without creating spec (test) files
+nest g resource <name> --no-spec
+
+# Examples
+nest g resource post
+nest g resource auth --no-spec
+nest g module prisma
+nest g service prisma
+```
+
+> `nest g resource` is the equivalent of Django's `startapp` — it scaffolds everything at once and registers the module automatically.
+
+---
+
+## Project structure
+
+```
+src/
+  auth/           # JWT auth (register, login, refresh)
+    dto/          # RegisterDto, LoginDto, RefreshTokenDto
+  post/           # Post CRUD with media upload
+    dto/          # CreatePostDto, UpdatePostDto
+  prisma/         # PrismaService (database connection)
+  common/
+    decorators/   # @ResponseMessage()
+    filters/      # HttpExceptionFilter — consistent error format
+    interceptors/ # ResponseInterceptor — consistent success format
+  config/         # jwt.config.ts, multer.config.ts, swagger.config.ts
+  main.ts
+prisma/
+  schema.prisma   # Database models
+  migrations/     # Auto-generated migration files
+media/            # Uploaded files (served at /media/<filename>)
+```
+
+---
+
+## API response format
+
+Every response follows the same shape:
+
+```json
+// Success
+{ "success": true, "message": "...", "data": { ... } }
+
+// Error
+{ "success": false, "message": "...", "data": null }
+```
+
+---
+
+## Tests
+
+```bash
+# Unit tests
+npm run test
+
+# Watch mode
+npm run test:watch
+
+# Coverage
+npm run test:cov
 ```
