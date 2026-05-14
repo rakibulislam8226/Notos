@@ -14,10 +14,31 @@ model Todo {
 }
 
 model User {
-  id         Int      @id @default(autoincrement())
-  email      String   @unique
+  id         Int       @id @default(autoincrement())
+  email      String    @unique
   password   String
   first_name String
-  last_name  String?  // optional
-  createdAt  DateTime @default(now())
+  last_name  String?
+  createdAt  DateTime  @default(now())
+  updatedAt  DateTime  @updatedAt
+  posts      Posts[]
+}
+
+model Posts {
+  id        Int          @id @default(autoincrement())
+  title     String
+  content   String?
+  published Boolean      @default(false)
+  authorId  Int
+  author    User         @relation(fields: [authorId], references: [id])
+  media     PostsMedia[]
+  createdAt DateTime     @default(now())
+  updatedAt DateTime     @updatedAt
+}
+
+model PostsMedia {
+  id     Int    @id @default(autoincrement())
+  url    String
+  postId Int
+  post   Posts  @relation(fields: [postId], references: [id])
 }

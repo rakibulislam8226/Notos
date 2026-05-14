@@ -1,10 +1,15 @@
-import { Injectable, ConflictException } from '@nestjs/common';
+import {
+  Injectable,
+  ConflictException,
+  UnauthorizedException,
+} from '@nestjs/common';
 import * as bcrypt from 'bcrypt';
 import { JwtService } from '@nestjs/jwt';
 import { ConfigService } from '@nestjs/config';
 import { PrismaService } from '../prisma/prisma.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
+import { RefreshTokenDto } from './dto/refresh-token.dto';
 
 @Injectable()
 export class AuthService {
@@ -17,12 +22,11 @@ export class AuthService {
   private generateTokens(userId: number, email: string) {
     const payload = { sub: userId, email };
 
-    // Access token — short-lived (15 min), used for every API request
+    // Access token — short-lived (15 min), used on every API request via Authorization header
     const access_token = this.jwtService.sign(payload);
 
-    // Refresh token — long-lived (7 days), used ONLY to get a new access token
-    // It uses a DIFFERENT secret so even if the access token secret leaks,
-    // the refresh token cannot be forged.
+    // Refresh token — long-lived (7 days), only used to get a new access token.
+    // Uses a separate secret so a compromised JWT_SECRET cannot forge refresh tokens.
     const refresh_token = this.jwtService.sign(payload, {
       secret: this.config.get<string>('JWT_REFRESH_SECRET'),
       expiresIn: '7d',
@@ -32,7 +36,7 @@ export class AuthService {
   }
 
   async register(dto: RegisterDto) {
-    // 1. Check if email is already taken
+    // Check if the email is already taken
     const existing = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
@@ -43,10 +47,9 @@ export class AuthService {
       });
     }
 
-    // 2. Hash the password — bcrypt generates a random salt automatically
+    // bcrypt.hash auto-generates a salt — 10 rounds is the recommended default
     const hashedPassword = await bcrypt.hash(dto.password, 10);
 
-    // 3. Save the user in the database (no tokens stored — they're stateless)
     const user = await this.prisma.user.create({
       data: {
         email: dto.email,
@@ -56,32 +59,40 @@ export class AuthService {
       },
     });
 
-    // 4. Generate tokens and return with user (without password)
+    // Never return the password hash — strip it before sending the response
     const { password: _omit, ...userWithoutPassword } = user;
-    const tokens = this.generateTokens(user.id, user.email);
-
-    return { ...userWithoutPassword, ...tokens };
+    return { ...userWithoutPassword, ...this.generateTokens(user.id, user.email) };
   }
 
   async login(dto: LoginDto) {
-    // 1. Find the user by email
     const user = await this.prisma.user.findUnique({
       where: { email: dto.email },
     });
-    if (!user) {
-      throw new ConflictException('Invalid credentials');
+
+    // Check both user existence and password in one condition.
+    // Using the same error message for both prevents email enumeration attacks
+    // (attacker cannot tell whether the email exists or the password is wrong).
+    if (!user || !(await bcrypt.compare(dto.password, user.password))) {
+      throw new UnauthorizedException('Invalid credentials');
     }
 
-    // 2. Compare the password with bcrypt
-    const isMatch = await bcrypt.compare(dto.password, user.password);
-    if (!isMatch) {
-      throw new ConflictException('Invalid credentials');
-    }
-
-    // 3. Generate tokens and return with user (without password)
     const { password: _omit, ...userWithoutPassword } = user;
-    const tokens = this.generateTokens(user.id, user.email);
+    return { ...userWithoutPassword, ...this.generateTokens(user.id, user.email) };
+  }
 
-    return { ...userWithoutPassword, ...tokens };
+  async refresh(dto: RefreshTokenDto) {
+    let payload: { sub: number; email: string };
+
+    try {
+      // Verify the refresh token using the refresh secret
+      payload = this.jwtService.verify(dto.refresh_token, {
+        secret: this.config.get<string>('JWT_REFRESH_SECRET'),
+      });
+    } catch {
+      throw new UnauthorizedException('Invalid or expired refresh token');
+    }
+
+    // Issue a brand new access token (and a new refresh token — token rotation)
+    return this.generateTokens(payload.sub, payload.email);
   }
 }
