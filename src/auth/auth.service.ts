@@ -37,7 +37,10 @@ export class AuthService {
       where: { email: dto.email },
     });
     if (existing) {
-      throw new ConflictException('Email already registered');
+      throw new ConflictException({
+        message: 'Email already registered',
+        data: [{ field: 'email', error: 'Email already registered' }],
+      });
     }
 
     // 2. Hash the password — bcrypt generates a random salt automatically
@@ -49,7 +52,7 @@ export class AuthService {
         email: dto.email,
         password: hashedPassword,
         first_name: dto.first_name,
-        last_name: dto.last_name,
+        last_name: dto.last_name ?? null,
       },
     });
 

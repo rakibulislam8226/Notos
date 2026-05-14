@@ -29,16 +29,21 @@ export class HttpExceptionFilter implements ExceptionFilter {
         } else if (typeof exceptionResponse === 'object') {
             const res = exceptionResponse as Record<string, unknown>;
 
-            // Validation errors from ValidationPipe produce { message: string[] }
-            // All other HttpExceptions produce { message: string }
-            message = Array.isArray(res['message'])
-                ? (res['message'] as string[]).join(', ')
-                : (res['message'] as string);
-
-            // Preserve any extra fields in data (e.g. custom error details)
-            const { message: _m, error: _e, statusCode: _s, ...rest } = res;
-            if (Object.keys(rest).length > 0) {
-                data = rest;
+            if (Array.isArray(res['message'])) {
+                // Validation errors from ValidationPipe — message is string[]
+                message = 'Please provide all the required fields';
+                data = (res['message'] as string[]).map((err) => ({
+                    field: err.split(' ')[0],
+                    error: err,
+                }));
+            } else if (res['data'] !== undefined) {
+                // Custom exceptions with explicit { message, data } shape
+                // e.g. throw new ConflictException({ message: '...', data: [...] })
+                message = res['message'] as string;
+                data = res['data'];
+            } else {
+                // Plain string-message HttpExceptions
+                message = res['message'] as string;
             }
         } else {
             message = 'An error occurred';

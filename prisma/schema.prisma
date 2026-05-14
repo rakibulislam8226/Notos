@@ -14,10 +14,10 @@ model Todo {
 }
 
 model User {
-  id        Int      @id @default(autoincrement())
-  email     String   @unique
-  password  String
+  id         Int      @id @default(autoincrement())
+  email      String   @unique
+  password   String
   first_name String
-  last_name  String
-  createdAt DateTime @default(now())
+  last_name  String?  // optional
+  createdAt  DateTime @default(now())
 }
