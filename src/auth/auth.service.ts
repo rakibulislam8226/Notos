@@ -22,7 +22,7 @@ export class AuthService {
   private generateTokens(userId: number, email: string) {
     const payload = { sub: userId, email };
 
-    // Access token — short-lived (15 min), used on every API request via Authorization header
+    // Access token — valid for 1 day, used on every API request via Authorization header
     const access_token = this.jwtService.sign(payload);
 
     // Refresh token — long-lived (7 days), only used to get a new access token.

@@ -4,7 +4,7 @@ import {
     ExceptionFilter,
     HttpException,
 } from '@nestjs/common';
-import { Request, Response } from 'express';
+import { Response } from 'express';
 
 // @Catch(HttpException) means this filter runs for ANY thrown HttpException
 // (ConflictException, UnauthorizedException, NotFoundException, etc.)

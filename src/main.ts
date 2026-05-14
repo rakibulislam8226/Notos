@@ -14,7 +14,7 @@ async function bootstrap() {
 
   setupSwagger(app);
 
-  app.useGlobalPipes(new ValidationPipe());
+  app.useGlobalPipes(new ValidationPipe({ whitelist: true }));
   app.useGlobalFilters(new HttpExceptionFilter());
   app.useGlobalInterceptors(new ResponseInterceptor(app.get(Reflector)));
 
