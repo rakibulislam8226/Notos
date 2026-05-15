@@ -1,0 +1,16 @@
+node_modules
+dist
+build
+.git
+.gitignore
+.dockerignore
+Dockerfile
+*.md
+.vscode
+.idea
+coverage
+.nyc_output
+*.log
+.env*
+media
+test
