@@ -1,4 +1,4 @@
-# Totos — NestJS REST API
+# Notos — NestJS REST API
 
 A NestJS REST API with JWT authentication, Prisma ORM (PostgreSQL), and file upload support.
 
