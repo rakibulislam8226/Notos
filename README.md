@@ -69,73 +69,17 @@ npx prisma db push
 
 ```bash
 # Generate a full resource: module + controller + service + DTOs + spec files
-nest g resource <name>
+nest g resource name
 
 # Generate individual pieces
-nest g module <name>
-nest g controller <name>
-nest g service <name>
+nest g module name
+nest g controller name
+nest g service name
 
 # Generate without creating spec (test) files
-nest g resource <name> --no-spec
-
-# Examples
-nest g resource post
-nest g resource auth --no-spec
-nest g module prisma
-nest g service prisma
+nest g resource name --no-spec
 ```
 
 > `nest g resource` is the equivalent of Django's `startapp` — it scaffolds everything at once and registers the module automatically.
 
 ---
-
-## Project structure
-
-```
-src/
-  auth/           # JWT auth (register, login, refresh)
-    dto/          # RegisterDto, LoginDto, RefreshTokenDto
-  post/           # Post CRUD with media upload
-    dto/          # CreatePostDto, UpdatePostDto
-  prisma/         # PrismaService (database connection)
-  common/
-    decorators/   # @ResponseMessage()
-    filters/      # HttpExceptionFilter — consistent error format
-    interceptors/ # ResponseInterceptor — consistent success format
-  config/         # jwt.config.ts, multer.config.ts, swagger.config.ts
-  main.ts
-prisma/
-  schema.prisma   # Database models
-  migrations/     # Auto-generated migration files
-media/            # Uploaded files (served at /media/<filename>)
-```
-
----
-
-## API response format
-
-Every response follows the same shape:
-
-```json
-// Success
-{ "success": true, "message": "...", "data": { ... } }
-
-// Error
-{ "success": false, "message": "...", "data": null }
-```
-
----
-
-## Tests
-
-```bash
-# Unit tests
-npm run test
-
-# Watch mode
-npm run test:watch
-
-# Coverage
-npm run test:cov
-```
