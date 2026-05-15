@@ -1,5 +1,6 @@
 import { Injectable } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
+import { paginate, PaginationOptions } from '../common/pagination/paginate';
 
 @Injectable()
 export class TodoService {
@@ -11,8 +12,12 @@ export class TodoService {
     });
   }
 
-  findAll() {
-    return this.prisma.todo.findMany();
+  findAll(options: PaginationOptions) {
+    return paginate(
+      this.prisma.todo,
+      {},
+      options,
+    );
   }
 
   findOne(id: number) {

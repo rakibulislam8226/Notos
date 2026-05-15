@@ -12,7 +12,7 @@ export const Paginate = createParamDecorator(
         const query = request.query as Record<string, string>;
 
         const page = Math.max(1, parseInt(query['page'], 10) || 1);
-        const limit = Math.min(100, Math.max(1, parseInt(query['limit'], 10) || 15));
+        const limit = Math.min(100, Math.max(1, parseInt(query['limit'], 10) || 15)); // Default limit=15, max limit=100
 
         return { page, limit };
     },
