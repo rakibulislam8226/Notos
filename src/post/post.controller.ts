@@ -10,6 +10,8 @@ import { UpdatePostDto } from './dto/update-post.dto';
 import { JwtAuthGuard } from '../auth/jwt-auth.guard';
 import { multerConfig } from '../config/multer.config';
 import { ResponseMessage } from '../common/decorators/response-message.decorator';
+import { Paginate } from '../common/decorators/paginate.decorator';
+import type { PaginationOptions } from '../common/pagination/paginate';
 
 @Controller('post')
 @UseGuards(JwtAuthGuard)
@@ -32,9 +34,9 @@ export class PostController {
 
   @Get()
   @ResponseMessage('Posts retrieved successfully')
-  findAll(@Req() req: Request) {
+  findAll(@Req() req: Request, @Paginate() pagination: PaginationOptions) {
     const userId = (req.user as { userId: number }).userId;
-    return this.postService.findAll(userId);
+    return this.postService.findAll(userId, pagination);
   }
 
   @Get(':id')

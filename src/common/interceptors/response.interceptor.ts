@@ -23,11 +23,18 @@ export class ResponseInterceptor implements NestInterceptor {
             'Success';
 
         return next.handle().pipe(
-            map((data) => ({
-                success: true,
-                message,
-                data,
-            })),
+            map((result) => {
+                // Paginated response: service returns { data, meta }
+                // Spread both to top level so the shape matches:
+                // { success, message, data: [...], meta: { ... } }
+                if (result && typeof result === 'object' && 'meta' in result) {
+                    const { data, meta } = result as { data: unknown; meta: unknown };
+                    return { success: true, message, data, meta };
+                }
+
+                // Single-item or non-paginated response
+                return { success: true, message, data: result };
+            }),
         );
     }
 }

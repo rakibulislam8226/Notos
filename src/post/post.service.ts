@@ -2,6 +2,7 @@ import { Injectable, NotFoundException } from '@nestjs/common';
 import { PrismaService } from '../prisma/prisma.service';
 import { CreatePostDto } from './dto/create-post.dto';
 import { UpdatePostDto } from './dto/update-post.dto';
+import { paginate, PaginationOptions } from '../common/pagination/paginate';
 
 @Injectable()
 export class PostService {
@@ -27,11 +28,12 @@ export class PostService {
     return post;
   }
 
-  findAll(userId: number) {
-    return this.prisma.posts.findMany({
-      where: { authorId: userId },
-      include: { media: true },
-    });
+  findAll(userId: number, options: PaginationOptions) {
+    return paginate(
+      this.prisma.posts,
+      { where: { authorId: userId }, include: { media: true } },
+      options,
+    );
   }
 
   findOne(id: number, userId: number) {
